@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/schoolreg/db" VERSION="20150101" COMMENT="XMLDB file for Moodle local/schoolreg"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+
+    <TABLES>
+        <TABLE NAME="local_school" COMMENT="School List">
+            <FIELDS>
+                <FIELD NAME="id" LENGTH="11" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+                <FIELD NAME="school_id" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="16" />
+                <FIELD NAME="school_key" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="32" />
+                <FIELD NAME="school_name" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="255" />
+                <FIELD NAME="school_address" SEQUENCE="false" TYPE="text" NOTNULL="false" />
+                <FIELD NAME="pic_email" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="100" />
+                <FIELD NAME="pic_title" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="100" />
+                <FIELD NAME="pic_name" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="100" />
+                <FIELD NAME="reg_date" SEQUENCE="false" TYPE="datetime" NOTNULL="false"  />
+                <FIELD NAME="verified" SEQUENCE="false" TYPE="int" NOTNULL="false" LENGTH="1" DEFAULT="0" />
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT=""/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ls_backupdatabaselog" COMMENT="Table to log synchronization plugin database backup">
+            <FIELDS>
+                <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+                <FIELD NAME="time" SEQUENCE="false" TYPE="datetime" NOTNULL="true"/>
+                <FIELD NAME="school_id" SEQUENCE="false" TYPE="int" NOTNULL="true" LENGTH="10"/>
+                <FIELD NAME="file_location" SEQUENCE="false" TYPE="char" NOTNULL="true" LENGTH="255" />
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="pk for database backup"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="ls_synchronizelog" COMMENT="Table to log synchronization plugin">
+            <FIELDS>
+                <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+                <FIELD NAME="time" SEQUENCE="false" TYPE="datetime" NOTNULL="true"/>
+                <FIELD NAME="version" SEQUENCE="false" TYPE="int" NOTNULL="true" LENGTH="11"/>
+                <FIELD NAME="school_id" SEQUENCE="false" TYPE="int" NOTNULL="true" LENGTH="10"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="pk for synchroniation"/>
+            </KEYS>
+        </TABLE>
+    </TABLES>
+
+</XMLDB>
