@@ -42,13 +42,15 @@
  */
 
 function xmldb_local_synchronization_upgrade($oldversion) {
-    global $CFG, $DB, $OUTPUT;
-
+    global $DB;
     $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
 
-
-    // Moodle v2.2.0 release upgrade line
-    // Put any upgrade step following this
-
+    $table = new xmldb_table('course');
+    $field = new xmldb_field('sync_version', XMLDB_TYPE_INTEGER, 11, null, null, null, 0);
+    if ($dbman->field_exists($table, $field)) {
+        $dbman->drop_field($table, $field);
+    } else {
+        $dbman->add_field($table, $field);
+    }
     return true;
 }

@@ -22,26 +22,15 @@
  * @copyright  2015 Arie Dwiyana
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-function xmldb_local_schoolreg_install() {
+function xmldb_local_schoolreg_uninstall() {
 
-    global $DB, $CFG;
+    global $DB;
 
-//    $dblist = $DB->get_tables();
-//    $dbman = $DB->get_manager();
-//
-//    $sql = '';
-//    foreach($dblist as $row){
-//        $tablename = $CFG->prefix . $row;
-//        if($row != "local_school" && $row != "local_synchronization"){
-//            $check = $dbman->field_exists($row, 'school_id');
-//            if($check){
-//                //$sql .= "ALTER TABLE $tablename DROP COLUMN school_id; ";
-//                $xmldb_t = new xmldb_table($row);
-//                $xmldb_f = new xmldb_field('school_id', XMLDB_TYPE_INTEGER);
-//
-//                $dbman->drop_field($xmldb_t, $xmldb_f);
-//            }
-//        }
-//    }
-    //$DB->execute($sql);
+    $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
+
+    $table = new xmldb_table('course');
+    $field = new xmldb_field('sync_version', XMLDB_TYPE_INTEGER, 11, null, null, null, 0);
+    if ($dbman->field_exists($table, $field)) {
+        $dbman->drop_field($table, $field);
+    } 
 }
