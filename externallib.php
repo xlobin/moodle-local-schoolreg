@@ -21,7 +21,7 @@ class local_schoolreg_external extends external_api {
         return new external_function_parameters(
                 array(
             'courseid' => new external_value(PARAM_ALPHANUMEXT, 'Course Id', VALUE_DEFAULT, NULL),
-            'type' => new external_value(PARAM_BOOL, 'Type', VALUE_DEFAULT, 0),
+            'type' => new external_value(PARAM_ALPHANUM, 'Type', VALUE_DEFAULT, 0),
                 )
         );
     }
@@ -30,7 +30,7 @@ class local_schoolreg_external extends external_api {
      * The function itself
      * @return string welcome message
      */
-    public static function getcontent($courseid, $type='0') {
+    public static function getcontent($courseid, $type = '0') {
 
         global $USER, $DB;
 
@@ -48,15 +48,45 @@ class local_schoolreg_external extends external_api {
             $listCourse = explode('_', $courseid);
             $listParam = '';
             $listId = array();
-            foreach ($listCourse as $courseid) {
-                $listParam .= ((strlen($listParam) > 0) ? "," : "") . ':courseid' . $courseid;
-                $listId['courseid' . $courseid] = $courseid;
+            foreach ($listCourse as $key => $courses) {
+                $course = explode('-', $courses);
+                if (isset($course[0], $course[1])) {
+                    $listId[$course[0]] = $course[1];
+                }
             }
-            $courses = $DB->get_records_sql('SELECT *from {course} where category != 0 and id not in (' . $listParam . ')', $listId);
+            $courses = $DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where category != 0');
+
+            foreach ($courses as $key => $value) {
+                if (isset($listId[$value->course_id])) {
+                    if ($listId[$value->course_id] == $value->version) {
+                        unset($courses[$key]);
+                    } else if ($value->version == '-1') {
+                        $courses[$key]->status = 'u';
+                    } else if ($listId[$value->course_id] < $value->version) {
+                        $courses[$key]->status = 'u';
+                    } else if ($listId[$value->course_id] > $value->version) {
+                        $courses[$key]->status = 'u';
+                    }
+                    unset($listId[$value->course_id]);
+                }else{
+                    $courses[$key]->status = 'c';
+                }
+            }
+            
+            foreach ($listId as $id => $version){
+                $course = new stdClass();
+                $course->course_id = $id;
+                $course->fullname = '';
+                $course->shortname = '';
+                $course->summary = '';
+                $course->category = '';
+                $course->status = 'd';
+                $courses[] = $course;
+            }
         } else {
-            $courses = array($DB->get_record('course', array('id' => $courseid)));
+            $courses = array($DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where id = :course_id', array('course_id' => $courseid)));
         }
-        
+
         //Context validation
         //OPTIONAL but in most web service it should present
         $context = get_context_instance(CONTEXT_USER, $USER->id);
@@ -81,7 +111,7 @@ class local_schoolreg_external extends external_api {
 
         foreach ($courses as $key => $course) {
             $result[$key] = array(
-                'id' => $course->id,
+                'id' => $course->course_id,
                 'fullname' => $course->fullname,
                 'shortname' => $course->shortname,
                 'course_summary' => $course->summary,
@@ -97,9 +127,10 @@ class local_schoolreg_external extends external_api {
                 'course_modules_completion' => '',
                 'course_published' => '',
                 'course_request' => '',
-                'course_sections' => ''
+                'course_sections' => '',
+                'status' => $course->status
             );
-            
+
             if ($type) {
                 foreach ($listSql as $row) {
                     $inserts = array();
@@ -108,7 +139,7 @@ class local_schoolreg_external extends external_api {
                         $inserts = $DB->get_records($row, $condition);
                     } else if ($row == 'course') {
                         $condition = array('id' => $result[$key]['id']);
-                        $inserts = $DB->get_records($row, $condition);
+                        $inserts = $DB->get_records_sql('SELECT {course}.*, {ls_course_version}.version as sync_version from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where id = :course_id', array('course_id' => $courseid));
                     } else {
                         $condition = array('course' => $result[$key]['id']);
                     }
@@ -150,7 +181,7 @@ class local_schoolreg_external extends external_api {
             'fullname' => new external_value(PARAM_TEXT, 'Course Name'),
             'course_summary' => new external_value(PARAM_CLEANHTML, 'Course Name'),
             'shortname' => new external_value(PARAM_TEXT, 'Course Short Name'),
-            'category' => new external_value(PARAM_INT, 'Course Short Name'),
+            'category' => new external_value(PARAM_TEXT, 'Course Short Name'),
             'course_categories' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course_completion_aggr_methd' => new external_value(PARAM_RAW_TRIMMED, ''),
@@ -162,7 +193,8 @@ class local_schoolreg_external extends external_api {
             'course_modules_completion' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course_published' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course_request' => new external_value(PARAM_RAW_TRIMMED, ''),
-            'course_sections' => new external_value(PARAM_RAW_TRIMMED, '')
+            'course_sections' => new external_value(PARAM_RAW_TRIMMED, ''),
+            'status' => new external_value(PARAM_RAW_TRIMMED, ''),
         );
 
         return new external_multiple_structure(
