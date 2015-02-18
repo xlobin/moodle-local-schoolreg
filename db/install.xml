@@ -43,6 +43,16 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="pk for synchroniation"/>
             </KEYS>
         </TABLE>
+        <TABLE NAME="ls_course_version" COMMENT="Table to log synchronization plugin">
+            <FIELDS>
+                <FIELD NAME="course_id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+                <FIELD NAME="version" SEQUENCE="false" TYPE="int" NOTNULL="true" LENGTH="11" DEFAULT="0"/>
+                <FIELD NAME="status" SEQUENCE="false" TYPE="int" NOTNULL="true" LENGTH="10" DEFAULT="0"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="course_id" COMMENT="pk for synchroniation"/>
+            </KEYS>
+        </TABLE>
     </TABLES>
 
 </XMLDB>
