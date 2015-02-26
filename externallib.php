@@ -55,7 +55,6 @@ class local_schoolreg_external extends external_api {
                 }
             }
             $courses = $DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where category != 0');
-
             foreach ($courses as $key => $value) {
                 if (isset($listId[$value->course_id])) {
                     if ($listId[$value->course_id] == $value->version) {
@@ -68,12 +67,12 @@ class local_schoolreg_external extends external_api {
                         $courses[$key]->status = 'u';
                     }
                     unset($listId[$value->course_id]);
-                }else{
+                } else {
                     $courses[$key]->status = 'c';
                 }
             }
-            
-            foreach ($listId as $id => $version){
+
+            foreach ($listId as $id => $version) {
                 $course = new stdClass();
                 $course->course_id = $id;
                 $course->fullname = '';
@@ -84,7 +83,7 @@ class local_schoolreg_external extends external_api {
                 $courses[] = $course;
             }
         } else {
-            $courses = array($DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where id = :course_id', array('course_id' => $courseid)));
+            $courses = array($DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid)));
         }
 
         //Context validation
@@ -139,13 +138,14 @@ class local_schoolreg_external extends external_api {
                         $inserts = $DB->get_records($row, $condition);
                     } else if ($row == 'course') {
                         $condition = array('id' => $result[$key]['id']);
-                        $inserts = $DB->get_records_sql('SELECT {course}.*, {ls_course_version}.version as sync_version from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where id = :course_id', array('course_id' => $courseid));
+                        $inserts = $DB->get_records_sql('SELECT {course}.*, {ls_course_version}.version as sync_version from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid));
                     } else {
                         $condition = array('course' => $result[$key]['id']);
                     }
-                    $sql = '';
+                    $sql = 'insert into {' . $row . '} ';
+                    $valueSql = '';
                     foreach ($inserts as $insert) {
-                        $valueSql = '(';
+                        $valueSql .= ((strlen($valueSql) > 0) ? ',' : '') . '(';
                         $columnSql = '(';
                         foreach ($insert as $keyInsert => $valueInsert) {
                             $valueContainer = $valueInsert;
@@ -160,7 +160,11 @@ class local_schoolreg_external extends external_api {
                         $columnSql = substr($columnSql, 0, count($columnSql) - 3);
                         $valueSql .= ')';
                         $columnSql .= ')';
-                        $sql = $columnSql . ' values ' . $valueSql;
+                    }
+                    if ($valueSql !== '') {
+                        $sql .= $columnSql . ' values ' . $valueSql;
+                    } else {
+                        $sql = '';
                     }
                     $result[$key][$row] = $sql;
                 }
