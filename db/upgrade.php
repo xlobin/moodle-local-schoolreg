@@ -49,6 +49,7 @@ function xmldb_local_synchronization_upgrade($oldversion) {
     $field = new xmldb_field('sync_version', XMLDB_TYPE_INTEGER, 11, null, null, null, 0);
     if ($dbman->field_exists($table, $field)) {
         $dbman->drop_field($table, $field);
+        $dbman->add_field($table, $field);
     } else {
         $dbman->add_field($table, $field);
     }

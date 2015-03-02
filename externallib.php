@@ -8,6 +8,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once($CFG->libdir . "/externallib.php");
+require_once($CFG->libdir . '/coursecatlib.php');
 
 class local_schoolreg_external extends external_api {
 
@@ -32,7 +33,7 @@ class local_schoolreg_external extends external_api {
      */
     public static function getcontent($courseid, $type = '0') {
 
-        global $USER, $DB;
+        global $USER, $DB, $CFG;
 
         //Parameter validation
         //REQUIRED
@@ -127,10 +128,25 @@ class local_schoolreg_external extends external_api {
                 'course_published' => '',
                 'course_request' => '',
                 'course_sections' => '',
-                'status' => $course->status
+                'status' => $course->status,
+                'files' => ''
             );
 
             if ($type) {
+                $dataCourse = $DB->get_record('course', array('id'=> $courseid));
+                $courseFile = new course_in_list($dataCourse);
+                $files = '';
+                foreach ($courseFile->get_course_overviewfiles() as $file) {
+                    $isimage = $file->is_valid_image();
+                    $file_record = $DB->get_record('files', array('id' => $file->get_id()));
+                    $url = file_encode_url("$CFG->wwwroot/pluginfile.php", '/' . $file->get_contextid() . '/' . $file->get_component() . '/' .
+                            $file->get_filearea() . $file->get_filepath() . $file->get_filename(), !$isimage);
+                    $file_record->url = $url;
+                    $files = json_encode($file_record);
+                }
+
+                $result[$key]['files'] = $files;
+                
                 foreach ($listSql as $row) {
                     $inserts = array();
                     if ($row == 'course_categories') {
@@ -199,6 +215,7 @@ class local_schoolreg_external extends external_api {
             'course_request' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course_sections' => new external_value(PARAM_RAW_TRIMMED, ''),
             'status' => new external_value(PARAM_RAW_TRIMMED, ''),
+            'files' => new external_value(PARAM_RAW_TRIMMED, ''),
         );
 
         return new external_multiple_structure(
