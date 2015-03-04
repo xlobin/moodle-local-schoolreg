@@ -129,7 +129,10 @@ class local_schoolreg_external extends external_api {
                 'course_request' => '',
                 'course_sections' => '',
                 'status' => $course->status,
-                'files' => ''
+                'files' => '',
+                'course_data' => '',
+                'course_params_data' => '',
+                'course_params_overview' => '',
             );
 
             if ($type) {
@@ -155,6 +158,12 @@ class local_schoolreg_external extends external_api {
                     } else if ($row == 'course') {
                         $condition = array('id' => $result[$key]['id']);
                         $inserts = $DB->get_records_sql('SELECT {course}.*, {ls_course_version}.version as sync_version from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid));
+                        $course_posted = $DB->get_record('ls_course_version', array('course_id' => $courseid));
+                        $result[$key]['course_data'] = json_encode($inserts);
+                        if ($course_posted){
+                            $result[$key]['course_params_data'] = $course_posted->course_data;
+                            $result[$key]['course_params_overview'] = $course_posted->course_overviewfiles;
+                        }
                     } else {
                         $condition = array('course' => $result[$key]['id']);
                     }
@@ -216,6 +225,9 @@ class local_schoolreg_external extends external_api {
             'course_sections' => new external_value(PARAM_RAW_TRIMMED, ''),
             'status' => new external_value(PARAM_RAW_TRIMMED, ''),
             'files' => new external_value(PARAM_RAW_TRIMMED, ''),
+            'course_data' => new external_value(PARAM_RAW_TRIMMED, ''),
+            'course_params_data' => new external_value(PARAM_RAW_TRIMMED, ''),
+            'course_params_overview' => new external_value(PARAM_RAW_TRIMMED, ''),
         );
 
         return new external_multiple_structure(
