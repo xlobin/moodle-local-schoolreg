@@ -84,7 +84,7 @@ class local_schoolreg_external extends external_api {
                 $courses[] = $course;
             }
         } else {
-            $courses = array($DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid)));
+            $courses = $DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid));
         }
 
         //Context validation
@@ -133,8 +133,9 @@ class local_schoolreg_external extends external_api {
                 'course_data' => '',
                 'course_params_data' => '',
                 'course_params_overview' => '',
+                'version' => $course->version,
             );
-
+           
             if ($type) {
                 $dataCourse = $DB->get_record('course', array('id'=> $courseid));
                 $courseFile = new course_in_list($dataCourse);
@@ -228,6 +229,7 @@ class local_schoolreg_external extends external_api {
             'course_data' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course_params_data' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course_params_overview' => new external_value(PARAM_RAW_TRIMMED, ''),
+            'version' => new external_value(PARAM_RAW_TRIMMED, ''),
         );
 
         return new external_multiple_structure(

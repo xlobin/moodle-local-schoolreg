@@ -56,6 +56,18 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="pk for course version"/>
             </KEYS>
         </TABLE>
+        <TABLE NAME="ls_upgrade_version" COMMENT="Table to log synchronization plugin">
+            <FIELDS>
+                <FIELD NAME="id" LENGTH="10" SEQUENCE="true" TYPE="int" NOTNULL="true"/>
+                <FIELD NAME="name" LENGTH="255" SEQUENCE="false" TYPE="char" NOTNULL="true"/>
+                <FIELD NAME="url" SEQUENCE="false" TYPE="text" NOTNULL="true"/>
+                <FIELD NAME="version" SEQUENCE="false" TYPE="int" NOTNULL="true" LENGTH="10" DEFAULT="0"/>
+                <FIELD NAME="description" SEQUENCE="false" TYPE="text" DEFAULT="null"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="pk for upgrade version"/>
+            </KEYS>
+        </TABLE>
     </TABLES>
 
 </XMLDB>
