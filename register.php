@@ -25,8 +25,8 @@ if ($mform->is_cancelled()) { // kalau di cancel
         $title = optional_param('title', '', PARAM_RAW_TRIMMED);
         $full_name = optional_param('full_name', '', PARAM_RAW_TRIMMED);
         $record = new stdClass();
-        $record->school_name = mysql_real_escape_string($school_name);
-        $record->school_address = mysql_real_escape_string($school_address);
+        $record->school_name = optional_param($school_name, '', PARAM_RAW_TRIMMED);
+        $record->school_address = optional_param($school_address, '', PARAM_RAW_TRIMMED);
         $record->pic_email = $email;
         $record->pic_title = $title;
         $record->pic_name = $full_name;
