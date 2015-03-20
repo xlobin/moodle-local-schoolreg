@@ -152,9 +152,6 @@ foreach ($files as $file) {
 
     if ($contents = file_get_contents($file->filepath)) {
         $contents = json_decode($contents);
-
-        var_dump($contents);
-        exit();
         
         $syncLog = new stdClass();
         $syncLog->time = date('Y-m-d H:i:s');

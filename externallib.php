@@ -9,6 +9,7 @@
  */
 require_once($CFG->libdir . "/externallib.php");
 require_once($CFG->libdir . '/coursecatlib.php');
+require_once(__DIR__.'/lib/moodlelib.php');
 
 class local_schoolreg_external extends external_api {
 
@@ -134,10 +135,41 @@ class local_schoolreg_external extends external_api {
                 'course_params_data' => '',
                 'course_params_overview' => '',
                 'version' => $course->version,
+                'query' => '',
             );
-           
+
             if ($type) {
-                $dataCourse = $DB->get_record('course', array('id'=> $courseid));
+                $sections = $DB->get_records('course_sections', array('course' => $course->course_id));
+                foreach ($sections as $keySection => $section) {
+                    if ($section->sequence != "" || $section->sequence) {
+                        $modlist = explode(',', $section->sequence);
+                        $modules = array();
+                        foreach ($modlist as $mod) {
+                            $module = $DB->get_record('course_modules', array('id' => $mod));
+                            $mod_type = $DB->get_record('modules', array('id' => $module->module));
+                            $module_item = $DB->get_records($mod_type->name, array('id' => $module->instance));
+                            foreach ($module_item as $keyItem => $item) {
+                                $functionName = 'getMy' . ucfirst(strtolower($mod_type->name));
+                                if (function_exists($functionName)) {
+                                    if ($moduleItem = $functionName($item))
+                                        $module_item[$keyItem]->my_item = $moduleItem;
+                                }
+                            }
+                            $module->my_item[$mod_type->name] = $module_item;
+                            $modules[$module->id] = $module;
+                        }
+                        $section->my_item = array('course_modules' => $modules);
+                    }
+                    $sections[$keySection] = $section;
+                }
+
+                $sections = array(
+                    'course_sections' => $sections,
+                    'course_categories' => $DB->get_records('course_categories', array('id' => $course->category))
+                );
+                $result[$key]['query'] = json_encode($sections);
+
+                $dataCourse = $DB->get_record('course', array('id' => $courseid));
                 $courseFile = new course_in_list($dataCourse);
                 $files = '';
                 foreach ($courseFile->get_course_overviewfiles() as $file) {
@@ -150,7 +182,7 @@ class local_schoolreg_external extends external_api {
                 }
 
                 $result[$key]['files'] = $files;
-                
+
                 foreach ($listSql as $row) {
                     $inserts = array();
                     if ($row == 'course_categories') {
@@ -161,7 +193,7 @@ class local_schoolreg_external extends external_api {
                         $inserts = $DB->get_records_sql('SELECT {course}.*, {ls_course_version}.version as sync_version from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid));
                         $course_posted = $DB->get_record('ls_course_version', array('course_id' => $courseid));
                         $result[$key]['course_data'] = json_encode($inserts);
-                        if ($course_posted){
+                        if ($course_posted) {
                             $result[$key]['course_params_data'] = $course_posted->course_data;
                             $result[$key]['course_params_overview'] = $course_posted->course_overviewfiles;
                         }
@@ -230,6 +262,7 @@ class local_schoolreg_external extends external_api {
             'course_params_data' => new external_value(PARAM_RAW_TRIMMED, ''),
             'course_params_overview' => new external_value(PARAM_RAW_TRIMMED, ''),
             'version' => new external_value(PARAM_RAW_TRIMMED, ''),
+            'query' => new external_value(PARAM_RAW, ''),
         );
 
         return new external_multiple_structure(
