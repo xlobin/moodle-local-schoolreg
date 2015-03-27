@@ -177,7 +177,7 @@ class local_schoolreg_external extends external_api {
                 foreach ($files as $keyFile => $file_record) {
                     $file = $fs->get_file_instance($file_record);
                     if ($file->get_content()){
-                        $files[$keyFile]->my_url = (string)moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename());
+                        $files[$keyFile]->my_url = (string)new moodle_url('/local/schoolreg/getfile.php?id='.$file_record->id);
                     }
                 }
                 $files = json_encode($files);
