@@ -9,7 +9,7 @@
  */
 require_once($CFG->libdir . "/externallib.php");
 require_once($CFG->libdir . '/coursecatlib.php');
-require_once(__DIR__.'/lib/moodlelib.php');
+require_once(__DIR__ . '/lib/moodlelib.php');
 
 class local_schoolreg_external extends external_api {
 
@@ -169,17 +169,18 @@ class local_schoolreg_external extends external_api {
                 );
                 $result[$key]['query'] = json_encode($sections);
 
-                $dataCourse = $DB->get_record('course', array('id' => $courseid));
-                $courseFile = new course_in_list($dataCourse);
-                $files = '';
-                foreach ($courseFile->get_course_overviewfiles() as $file) {
-                    $isimage = $file->is_valid_image();
-                    $file_record = $DB->get_record('files', array('id' => $file->get_id()));
-                    $url = file_encode_url("$CFG->wwwroot/pluginfile.php", '/' . $file->get_contextid() . '/' . $file->get_component() . '/' .
-                            $file->get_filearea() . $file->get_filepath() . $file->get_filename(), !$isimage);
-                    $file_record->url = $url;
-                    $files = json_encode($file_record);
+                $query = "select {files}.*, {context}.instanceid as modules_id from {files} join {context} on {files}.contextid = {context}.id where contextid in (
+                        select id from {context} where path like (select concat(context_child.path,'/%') from {context} as context_child where contextlevel = " . CONTEXT_COURSE . " and instanceid = $courseid) and contextlevel = " . CONTEXT_MODULE . ")";
+
+                $files = $DB->get_records_sql($query);
+                $fs = get_file_storage();
+                foreach ($files as $keyFile => $file_record) {
+                    $file = $fs->get_file_instance($file_record);
+                    if ($file->get_content()){
+                        $files[$keyFile]->my_url = (string)moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename());
+                    }
                 }
+                $files = json_encode($files);
 
                 $result[$key]['files'] = $files;
 

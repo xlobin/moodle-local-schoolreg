@@ -111,3 +111,81 @@ function getMyBook($book) {
     $chapter = $DB->get_records('book_chapters', array('bookid' => $book->id));
     return (($chapter) ? array('book_chapters' => $chapter) : null);
 }
+
+function getMyChoice($choice){
+    global $DB;
+
+    $choices = $DB->get_records('choice_options', array('choiceid' => $choice->id));
+    return (($choices) ? array('choice_options' => $choices) : null);
+}
+
+function getMyGlossary($glo){
+    global $DB;
+
+    $glossary = array();
+    // categories //
+    $categories = $DB->get_records('glossary_categories', array('glossaryid' => $glo->id));
+    if (count($categories) > 0) {
+        $glossary['glossary_categories'] = $categories;
+    }
+
+    // entries //
+    $entries = $DB->get_records('glossary_entries', array('glossaryid' => $glo->id));
+    if (count($entries) > 0) {
+        $glossary['glossary_entries'] = $entries;
+    }
+
+    // alias //
+    $alias = $DB->get_records_sql("SELECT * FROM {glossary_alias} WHERE entryid IN (SELECT id FROM {glossary_entries} WHERE glossaryid = ? )", array($glo->id));
+    if (count($alias) > 0) {
+        $glossary['alias'] = $alias;
+    }
+
+    // entries_categories //
+    $entries_categories = $DB->get_records_sql("SELECT * FROM {glossary_entries_categories} WHERE categoryid IN (SELECT id FROM {glossary_categories} WHERE glossaryid = ?)", array($glo->id));
+    if (count($entries_categories) > 0) {
+        $glossary['glossary_entries_categories'] = $entries_categories;
+    }
+
+    return $glossary;
+}
+
+function getMyLesson($lesson){
+    global $DB;
+
+    $lessons = array();
+    $pages = $DB->get_records('lesson_pages', array('lessonid' => $lesson->id));
+    $lessons['lesson_pages'] = $pages;
+
+    $answers = $DB->get_records('lesson_answers', array('lessonid' => $lesson->id));
+    $lessons['lesson_answers'] = $answers;
+
+    return (($lessons) ? $lessons : null);
+}
+
+function getMyWiki($wikis){
+    global $DB;
+
+    $subwikis = $DB->get_records('wiki_subwikis', array('wikiid' => $wikis->id));
+    if(count($subwikis)>0){
+        foreach($subwikis as $keySubwikis => $sub){
+            $pages = $DB->get_records('wiki_pages', array('subwikiid' => $sub->id));
+            if(count($pages)>0){
+                foreach($pages as $keyPages => $page){
+                    $versions = $DB->get_records('wiki_versions', array('pageid' => $page->id));
+                    if(count($versions)>0){
+                        $pages[$keyPages]->my_item['wiki_versions'] = $versions;
+                    }
+                }
+                $subwikis[$keySubwikis]->my_item['wiki_pages'] = $pages;
+            }
+
+            $links = $DB->get_records('wiki_links', array('subwikiid' => $sub->id));
+            if(count($links)>0){
+                $subwikis[$keySubwikis]->my_item['wiki_links'] = $links;
+            }
+        }
+    }
+
+    return (($subwikis) ? array('wiki_subwikis' => $subwikis) : null);
+}
