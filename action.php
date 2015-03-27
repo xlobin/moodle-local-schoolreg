@@ -2,26 +2,6 @@
 
 require_once('../../config.php');
 
-$query = "select {files}.*, {context}.instanceid as modules_id from {files} join {context} on {files}.contextid = {context}.id where contextid in (
-                        select id from {context} where path like (select concat(context_child.path,'/%') from {context} as context_child where contextlevel = ".CONTEXT_COURSE." and instanceid = 2) and contextlevel = ".CONTEXT_MODULE.")";
-
-$files = $DB->get_records_sql($query);
-$fs = get_file_storage();
-foreach ($files as $keyFile => $file_record) {
-    $file = $fs->get_file_instance($file_record);
-    if ($my_content = $file->get_content()){
-        $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename());
-        var_dump((string)$url);
-//        $files[$keyFile]->my_content = $my_content;
-    }
-}
-//$files = json_encode($files);
-echo "<pre>";
-var_dump($files);
-exit();
-
-require_once($CFG->libdir . '/adminlib.php');
-
 $act = $_GET['act'];
 $sch_id = $_GET['sch_id'];
 if (!empty($act) && !empty($sch_id)) {
