@@ -56,8 +56,11 @@ class local_schoolreg_external extends external_api {
                     $listId[$course[0]] = $course[1];
                 }
             }
-            $courses = $DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where category != 0');
+            $courses = $DB->get_records_sql('SELECT {course}.*, {ls_course_version}.version, {ls_course_version}.status, {ls_course_version}.course_data, {ls_course_version}.course_overviewfiles from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where category != 0');
             foreach ($courses as $key => $value) {
+                if ($value->course_id == null){
+                    $value->course_id = $value->id;
+                }
                 if (isset($listId[$value->course_id])) {
                     if ($listId[$value->course_id] == $value->version) {
                         unset($courses[$key]);
@@ -76,6 +79,7 @@ class local_schoolreg_external extends external_api {
 
             foreach ($listId as $id => $version) {
                 $course = new stdClass();
+                $course->id = $id;
                 $course->course_id = $id;
                 $course->fullname = '';
                 $course->shortname = '';
@@ -85,9 +89,9 @@ class local_schoolreg_external extends external_api {
                 $courses[] = $course;
             }
         } else {
-            $courses = $DB->get_records_sql('SELECT *from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid));
+            $courses = $DB->get_records_sql('SELECT {course}.*, {ls_course_version}.version, {ls_course_version}.status, {ls_course_version}.course_data, {ls_course_version}.course_overviewfiles from {course} left join {ls_course_version} on {ls_course_version}.course_id = {course}.id where {course}.id = :course_id', array('course_id' => $courseid));
         }
-
+        
         //Context validation
         //OPTIONAL but in most web service it should present
         $context = get_context_instance(CONTEXT_USER, $USER->id);
@@ -112,7 +116,7 @@ class local_schoolreg_external extends external_api {
 
         foreach ($courses as $key => $course) {
             $result[$key] = array(
-                'id' => $course->course_id,
+                'id' => $course->id,
                 'fullname' => $course->fullname,
                 'shortname' => $course->shortname,
                 'course_summary' => $course->summary,
@@ -139,7 +143,7 @@ class local_schoolreg_external extends external_api {
             );
 
             if ($type) {
-                $sections = $DB->get_records('course_sections', array('course' => $course->course_id));
+                $sections = $DB->get_records('course_sections', array('course' => $course->id));
                 foreach ($sections as $keySection => $section) {
                     if ($section->sequence != "" || $section->sequence) {
                         $modlist = explode(',', $section->sequence);

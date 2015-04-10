@@ -145,7 +145,7 @@ foreach ($files as $file) {
 
     $contents = file_get_contents($file->filepath);
     $path = $CFG->dirroot . $filepath . '/' . $file->filename;
-    $hasil = file_exists($path) ? false : file_put_contents($path, $contents);
+    $hasil = file_put_contents($path, $contents);
     if ($hasil) {
         $backup = new stdClass();
         $backup->file_location = $path;

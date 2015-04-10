@@ -46,6 +46,7 @@ define('NO_MOODLE_COOKIES', true);
 
 require_once('../../config.php');
 require_once('lib/SyncWebService.php');
+require_once('/lib/MySynchronizationServer.php');
 $filepath = optional_param('filepath', '/', PARAM_PATH);
 // The default file area is 'private' for user private files. This
 // area is actually deprecated and only supported for backwards compatibility with
@@ -151,14 +152,21 @@ foreach ($files as $file) {
     $file_record->source = '';
 
     if ($contents = file_get_contents($file->filepath)) {
-        $contents = json_decode($contents);
-        
+
         $syncLog = new stdClass();
         $syncLog->time = date('Y-m-d H:i:s');
         $syncLog->version = $version;
         $syncLog->school_id = $authenticationinfo['id'];
+        $syncLog->path = $CFG->dirroot . $filepath . '/' . $file->filename;
 
-        if ($DB->insert_record('ls_synchronizelog', $syncLog, false)) {
+        $hasil = file_put_contents($syncLog->path, $contents);
+
+        $synchronization = new MySynchronizationServer(array(
+            'response' => $contents,
+            'school_id' => $syncLog->school_id,
+        ));
+
+        if ($hasil && $synchronization->execute() && $DB->insert_record('ls_synchronizelog', $syncLog, false)) {
             $results = array(
                 'success' => true,
                 'message' => 'Successfully create new synchronization'

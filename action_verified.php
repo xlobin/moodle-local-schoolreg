@@ -4,7 +4,7 @@ require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
 $act = optional_param('act', 'det', PARAM_ALPHANUMEXT);
-$sch_id = optional_param('sch_id', null, PARAM_RAW_TRIMMED);
+$sch_id = optional_param('sid', null, PARAM_RAW_TRIMMED);
 if(!empty($act) && !empty($sch_id)){
     $sid = base64_decode($sch_id);
     switch($act){

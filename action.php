@@ -68,7 +68,9 @@ function gen_folder($school_id) {
     if (!file_exists("../../schdir")) {
         mkdir("../../schdir");
     }
-    mkdir("../../schdir/" . $school_id);
+    if ("../../schdir/" . $school_id) {
+        mkdir("../../schdir/" . $school_id);
+    }
 }
 
 function send_email($sch) {
@@ -83,7 +85,6 @@ function send_email($sch) {
     $message .= "Please don't be hesitate to email us (support@CLOUDLMS.com) if you need further information.\n\n";
     $message .= "Best Regards,\n";
     $message .= "Webmaster";
-
 
     $headers = 'From: webmaster@CLOUDLMS.com' . "\r\n" .
             'Reply-To: noreply@CLOUDLMS.com' . "\r\n" .
