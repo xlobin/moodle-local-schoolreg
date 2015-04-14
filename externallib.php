@@ -184,6 +184,17 @@ class local_schoolreg_external extends external_api {
                         $files[$keyFile]->my_url = (string)new moodle_url('/local/schoolreg/getfile.php?id='.$file_record->id);
                     }
                 }
+                
+                $dataCourse = $DB->get_record('course', array('id'=> $course->id));
+                $courseFile = new course_in_list($dataCourse);
+                foreach ($courseFile->get_course_overviewfiles() as $file) {
+                    $isimage = $file->is_valid_image();
+                    $file_record = $DB->get_record('files', array('id' => $file->get_id()));
+                    $url = file_encode_url("$CFG->wwwroot/pluginfile.php", '/' . $file->get_contextid() . '/' . $file->get_component() . '/' .
+                            $file->get_filearea() . $file->get_filepath() . $file->get_filename(), !$isimage);
+                    $file_record->my_url = $url;
+                    $files[] = $file_record;
+                }
                 $files = json_encode($files);
 
                 $result[$key]['files'] = $files;
