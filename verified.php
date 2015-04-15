@@ -89,7 +89,7 @@ if(count($unverified)>0){
 <script>
     function delcon(eid){
         if(confirm("<?php echo get_string('delete_conf', 'local_schoolreg'); ?>")){
-            window.location.href = "action_verified.php?act=del&sch_id="+eid;
+            window.location.href = "action_verified.php?act=del&sid="+eid;
         }
     }
 
