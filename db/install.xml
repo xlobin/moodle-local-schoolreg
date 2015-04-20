@@ -10,6 +10,7 @@
                 <FIELD NAME="school_id" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="16" />
                 <FIELD NAME="school_key" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="32" />
                 <FIELD NAME="school_name" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="255" />
+                <FIELD NAME="category" SEQUENCE="false" TYPE="int" NOTNULL="true" LENGTH="11" />
                 <FIELD NAME="school_address" SEQUENCE="false" TYPE="text" NOTNULL="false" />
                 <FIELD NAME="pic_email" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="100" />
                 <FIELD NAME="pic_title" SEQUENCE="false" TYPE="char" NOTNULL="false" LENGTH="100" />

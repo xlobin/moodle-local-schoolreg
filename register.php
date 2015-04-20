@@ -32,7 +32,8 @@ if ($mform->is_cancelled()) { // kalau di cancel
     $reg = optional_param('reg', 0, PARAM_INT);
     if (!empty($reg)) {
         $record = new stdClass();
-        $record->school_name = $fromform->school_name;
+//        $record->school_name = $fromform->school_name;
+        $record->category = $fromform->category_id;
         $record->school_address =  $fromform->school_address;
         $record->pic_email =  $fromform->email;
         $record->pic_title = $fromform->title;

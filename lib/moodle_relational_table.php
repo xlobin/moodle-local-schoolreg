@@ -101,9 +101,10 @@ class moodle_relational_table {
                 }
                 $data->$value['table_fk'] = $fields->$value['fk'];
             }
+            return $data;
         }
 
-        return $data;
+        return false;
     }
 
 }

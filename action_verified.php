@@ -5,8 +5,9 @@ require_once($CFG->libdir.'/adminlib.php');
 
 $act = optional_param('act', 'det', PARAM_ALPHANUMEXT);
 $sch_id = optional_param('sid', null, PARAM_RAW_TRIMMED);
+
 if(!empty($act) && !empty($sch_id)){
-    $sid = base64_decode($sch_id);
+    $sid = $sch_id;
     switch($act){
         case 'del'  :
             if($DB->delete_records('local_school', array('id' => $sid))){
@@ -19,9 +20,9 @@ if(!empty($act) && !empty($sch_id)){
             redirect('verified.php?msg='.base64_encode($message).$actres);
             break;
         case 'det'  :
-            $sch = $DB->get_record('local_school', array('id' => $sch_id));
+            $sch = $DB->get_record_sql('select {local_school}.*, {course_categories}.name from {local_school} left join {course_categories} on {local_school}.category = {course_categories}.id where {local_school}.id = ?', array($sid));
             echo '<table width="100%" cellpadding="2" border="0" class="schoolreg_table">';
-            echo '<tr><td class="schoolreg_label" width="150">'.get_string('school_name','local_schoolreg').'</td><td>'.$sch->school_name.'</td></tr>';
+            echo '<tr><td class="schoolreg_label" width="150">'.get_string('school_name','local_schoolreg').'</td><td>'.$sch->name.'</td></tr>';
             echo '<tr><td class="schoolreg_label" width="150">'.get_string('school_address','local_schoolreg').'</td><td>'.$sch->school_address.'</td></tr>';
             echo '<tr><td class="schoolreg_label" width="150">'.get_string('registrar','local_schoolreg').'</td><td>'.$sch->pic_title.'. '.$sch->pic_name.'</td></tr>';
             echo '<tr><td class="schoolreg_label" width="150">'.get_string('email','local_schoolreg').'</td><td>'.$sch->pic_email.'</td></tr>';

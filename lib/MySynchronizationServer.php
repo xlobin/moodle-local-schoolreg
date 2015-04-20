@@ -18,6 +18,7 @@ class MySynchronizationServer {
     public $attributes = array();
     private $_moodleRelation;
     public $DB;
+    public $updateLocal = array();
 
     public function __construct($params) {
         global $DB;
@@ -105,7 +106,16 @@ class MySynchronizationServer {
                 unset($query->my_id);
                 $condition = array('id' => $query->id);
             } else {
-                $condition = array('my_id' => $query->id, 'school_id' => $this->school_id);
+                if ($table == 'course_sections') {
+                    $condition = array('course' => $query->course, 'section' => $query->section);
+                    $dbData = $this->DB->get_record($table, $condition);
+                    if ($dbData) {
+                        $query->id = $dbData->id;
+                    }
+                } else {
+                    $condition = array('id' => $query->id);
+                }
+                $clientId = $query->id;
             }
 
             foreach ($condition as $key => $cond) {
@@ -113,11 +123,14 @@ class MySynchronizationServer {
             }
             $jumlah = $this->DB->count_records($table, $condition);
             if ($jumlah > 0) {
-                
+
                 return ($this->DB->update_record($table, $query)) ? $query : false;
             } else {
                 unset($query->id);
                 $query->id = $this->DB->insert_record($table, $query);
+                if (isset($clientId)){
+                    $this->updateLocal[$table][$clientId] = $query->id;
+                }
                 return ($query) ? $query : false;
             }
         }
@@ -170,6 +183,10 @@ class MySynchronizationServer {
             $transaction->rollback($exc);
         }
         return $success;
+    }
+    
+    public function getUpdateLocal(){
+        return $this->updateLocal;
     }
 
 }
