@@ -21,7 +21,7 @@ echo $OUTPUT->heading(get_string('log_synchronization','local_schoolreg'));
 $table = new flexible_table('tbl_synchronizelog');
 
 $table->define_columns(array('time', 'version', 'school_id'));
-$table->define_headers(array('Time', get_string('version', 'local_synchronization'), get_string('school_name', 'local_synchronization')));
+$table->define_headers(array('Time', get_string('version', 'local_schoolreg'), get_string('school_name_test', 'local_schoolreg')));
 $table->set_control_variables(array(
     TABLE_VAR_SORT => 'ssort',
     TABLE_VAR_IFIRST => 'sifirst',
