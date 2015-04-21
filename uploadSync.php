@@ -167,9 +167,11 @@ foreach ($files as $file) {
         ));
 
         if ($hasil && $synchronization->execute() && $DB->insert_record('ls_synchronizelog', $syncLog, false)) {
+            purge_all_caches();
             $results = array(
                 'success' => true,
-                'message' => 'Successfully create new synchronization'
+                'message' => 'Successfully create new synchronization',
+                'result' => $synchronization->getUpdateLocal()
             );
         }
     }

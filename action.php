@@ -5,7 +5,7 @@ require_once('../../config.php');
 $act = $_GET['act'];
 $sch_id = $_GET['sch_id'];
 if (!empty($act) && !empty($sch_id)) {
-    $sid = base64_decode($sch_id);
+    $sid = $sch_id;
     switch ($act) {
         case 'del' :
             if ($DB->delete_records('local_school', array('id' => $sid))) {
@@ -68,7 +68,7 @@ function gen_folder($school_id) {
     if (!file_exists("../../schdir")) {
         mkdir("../../schdir");
     }
-    if ("../../schdir/" . $school_id) {
+    if (!file_exists("../../schdir/" . $school_id)) {
         mkdir("../../schdir/" . $school_id);
     }
 }

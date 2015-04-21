@@ -49,7 +49,7 @@ $table->set_attribute('id', 'compatibleblockstable');
 $jumlah = $DB->count_records('local_school', array('verified' => 0));
 
 $table->pagesize($perpage, $jumlah);
-$table->sortable(true, 'reg_date', SORT_ASC);
+//$table->sortable(true, 'reg_date', SORT_ASC);
 $table->no_sorting('view');
 $table->no_sorting('accept');
 $table->no_sorting('delete');
@@ -58,7 +58,7 @@ $table->set_attribute('cellspacing', '0');
 $table->setup();
 $sort = $table->get_sql_sort();
 
-if (!$unverified = $DB->get_records('local_school', array('verified' => 0), $sort, '*', ($spage * $perpage), $perpage)) {
+if (!$unverified = $DB->get_records_sql('select {local_school}.*, {course_categories}.name from {local_school} left join {course_categories} on {local_school}.category = {course_categories}.id where verified = ?', array(0), ($spage * $perpage), $perpage)) {
     //print_error('noblocks', 'error');  // Should never happen
     echo '<div class="alert alert-error">'.get_string('data_empty', 'local_schoolreg').'</div>';
 }
@@ -68,10 +68,10 @@ $tablerows = array();
 if(count($unverified)>0){
     foreach ($unverified as $rows) {
         $view_btn = '<a href="javascript:void(0)" class="view_btn" sid="'.$rows->id.'" title="View '.$rows->school_name.'">'.'<img src="'.$OUTPUT->pix_url('t/hide') . '" class="iconsmall" /></a>';
-        $delete_btn = '<a href="javascript:void(0)" onclick="delcon(\''.base64_encode($rows->id).'\')" title="Delete '.$rows->school_name.'">'.'<img src="'.$OUTPUT->pix_url('t/delete') . '" class="iconsmall" /></a>';
-        $accept_btn = '<a href="action.php?act=acc&sch_id='.base64_encode($rows->id).'" title="Accept '.$rows->school_name.' Registration">'.'<img src="'.$OUTPUT->pix_url('t/check') . '" class="iconsmall" /></a>';
+        $delete_btn = '<a href="javascript:void(0)" onclick="delcon(\''.$rows->id.'\')" title="Delete '.$rows->school_name.'">'.'<img src="'.$OUTPUT->pix_url('t/delete') . '" class="iconsmall" /></a>';
+        $accept_btn = '<a href="action.php?act=acc&sch_id='.$rows->id.'" title="Accept '.$rows->school_name.' Registration">'.'<img src="'.$OUTPUT->pix_url('t/check') . '" class="iconsmall" /></a>';
         $row = array(
-            $rows->school_name,
+            $rows->name,
             $rows->pic_title.'. '.$rows->pic_name,
             $rows->pic_email,
             date('d/m/Y', strtotime($rows->reg_date)),
