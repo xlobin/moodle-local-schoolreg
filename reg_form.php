@@ -33,7 +33,7 @@ class reg_form extends moodleform {
 
         $categories = $DB->get_records_menu('course_categories', array('depth' => '3'));
        
-        $mform->addElement('select', 'category_id', get_string('school_name', 'local_schoolreg'), $categories, 'style="width:80%"');
+        $mform->addElement('select', 'category_id', get_string('school_name', 'local_schoolreg'), $categories);
         $mform->setType('category_id', PARAM_NOTAGS);
         $mform->addRule('category_id', get_string('missing_schoolname', 'local_schoolreg'), 'required', null, 'server');
 

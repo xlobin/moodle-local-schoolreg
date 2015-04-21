@@ -18,6 +18,14 @@ class local_synchronization_event_handler {
         $data = $_POST;
         unset($data['sesskey']);
         unset($data['_qf__course_edit_form']);
+        unset($data['mform_isexpanded_id_general']);
+        unset($data['mform_isexpanded_id_courseformathdr']);
+        unset($data['mform_isexpanded_id_appearancehdr']);
+        unset($data['mform_isexpanded_id_filehdr']);
+        unset($data['mform_isexpanded_id_enrol_guest_header_5']);
+        unset($data['mform_isexpanded_id_groups']);
+        unset($data['mform_isexpanded_id_rolerenaming']);
+        unset($data['enrol_guest_password_5']);
         $record->course_data = json_encode((object) $data);
         $record->course_overviewfiles = json_encode($editoroptions);
         $DB->insert_record('ls_course_version', $record);
@@ -150,18 +158,23 @@ class local_synchronization_event_handler {
         );
 
         $listEvent = array('created', 'updated', 'deleted');
-        
+
         if (in_array($event->objecttable, $listTables)) {
             if (!empty($event->courseid) && in_array($event->action, $listEvent)) {
-                $record = $DB->get_record('ls_course_version', array('course_id' => $event->courseid));
-                if ($record) {
-                    $record->version = $record->version + 1;
-                    $DB->update_record('ls_course_version', $record);
+                $methodName = $event->objecttable . '_' . $event->action;
+                if (method_exists('local_synchronization_event_handler', $methodName)) {
+                    self::$methodName($event);
                 } else {
-                    $record = new stdClass();
-                    $record->course_id = $event->objectid;
-                    $record->version = 1;
-                    $DB->insert_record('ls_course_version', $record);
+                    $record = $DB->get_record('ls_course_version', array('course_id' => $event->courseid));
+                    if ($record) {
+                        $record->version = $record->version + 1;
+                        $DB->update_record('ls_course_version', $record);
+                    } else {
+                        $record = new stdClass();
+                        $record->course_id = $event->objectid;
+                        $record->version = 1;
+                        $DB->insert_record('ls_course_version', $record);
+                    }
                 }
             }
         }
