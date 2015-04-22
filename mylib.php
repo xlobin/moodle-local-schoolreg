@@ -45,13 +45,23 @@ class local_synchronization_event_handler {
         $data = $_POST;
         unset($data['sesskey']);
         unset($data['_qf__course_edit_form']);
-        $record->course_data = json_encode((object) $data);
-        $record->course_overviewfiles = json_encode($editoroptions);
+        unset($data['mform_isexpanded_id_general']);
+        unset($data['mform_isexpanded_id_courseformathdr']);
+        unset($data['mform_isexpanded_id_appearancehdr']);
+        unset($data['mform_isexpanded_id_filehdr']);
+        unset($data['mform_isexpanded_id_enrol_guest_header_5']);
+        unset($data['mform_isexpanded_id_groups']);
+        unset($data['mform_isexpanded_id_rolerenaming']);
+        unset($data['enrol_guest_password_5']);
         if ($record) {
+            $record->course_data = json_encode((object) $data);
+            $record->course_overviewfiles = json_encode($editoroptions);
             $record->version = $record->version + 1;
             $DB->update_record('ls_course_version', $record);
         } else {
             $record = new stdClass();
+            $record->course_data = json_encode((object) $data);
+            $record->course_overviewfiles = json_encode($editoroptions);
             $record->course_id = $event->objectid;
             $record->version = 1;
             $DB->insert_record('ls_course_version', $record);

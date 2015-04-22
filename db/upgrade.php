@@ -41,7 +41,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function xmldb_local_synchronization_upgrade($oldversion) {
+function xmldb_local_schoolreg_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
 
