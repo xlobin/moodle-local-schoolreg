@@ -47,6 +47,7 @@ define('NO_MOODLE_COOKIES', true);
 require_once('../../config.php');
 require_once('lib/SyncWebService.php');
 require_once('/lib/MySynchronizationServer.php');
+require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 $filepath = optional_param('filepath', '/', PARAM_PATH);
 // The default file area is 'private' for user private files. This
 // area is actually deprecated and only supported for backwards compatibility with
@@ -131,7 +132,7 @@ $maxupload = get_user_max_upload_file_size($context, $CFG->maxbytes);
 
 $results = array(
     'success' => false,
-    'message' => 'Failed to create new synchronization'
+    'message' => 'Failed to create new synchronization.'
 );
 foreach ($files as $file) {
     if (!empty($file->error)) {
@@ -161,18 +162,94 @@ foreach ($files as $file) {
 
         $hasil = file_put_contents($syncLog->path, $contents);
 
-        $synchronization = new MySynchronizationServer(array(
-            'response' => $contents,
-            'school_id' => $syncLog->school_id,
-        ));
+        $tempFile = $syncLog->path;
 
-        if ($hasil && $synchronization->execute() && $DB->insert_record('ls_synchronizelog', $syncLog, false)) {
-            purge_all_caches();
-            $results = array(
-                'success' => true,
-                'message' => 'Successfully create new synchronization',
-                'result' => $synchronization->getUpdateLocal()
-            );
+        if ($hasil) {
+            $zip = new ZipArchive();
+
+            if ($zip->open($tempFile) === TRUE) {
+
+                $path = $CFG->dataroot . '/temp/backup/';
+                if (!file_exists($path)) {
+                    mkdir($path);
+                }
+
+                function Delete($path, $parentDelete = true) {
+                    if (is_dir($path) === true) {
+                        $files = array_diff(scandir($path), array('.', '..'));
+                        foreach ($files as $file) {
+                            Delete(realpath($path) . '/' . $file);
+                        }
+                        return (($parentDelete) ? rmdir($path) : true);
+                    } else if (is_file($path) === true) {
+                        return unlink($path);
+                    }
+                    return false;
+                }
+
+                $parentPath = $path . '1234567890';
+
+                $zip->extractTo($parentPath);
+                $zip->close();
+
+                $files = scandir($parentPath);
+                $transaction = $DB->start_delegated_transaction();
+
+                $returnId = array();
+                $match = true;
+                foreach ($files as $file) {
+
+                    if (strpos($file, 'mbz') !== false) {
+
+                        $courseid = str_replace("course_", "", $file);
+                        $courseid = str_replace(".mbz", "", $courseid);
+                        $folder = '10000' . $courseid;
+                        if ($zip->open($parentPath . DIRECTORY_SEPARATOR . $file) === TRUE) {
+                            $zip->extractTo($path . DIRECTORY_SEPARATOR . $folder);
+                            $zip->close();
+
+                            $categoryid = $authenticationinfo['category']; // e.g. 1 == Miscellaneous
+                            $jumlahCourse = $DB->count_records('course', array('id' => $courseid));
+                            if ($jumlahCourse > 0) {
+                                delete_course($courseid, false);
+                                $userdoingrestore = 2; // e.g. 2 == admin
+                                $course_id = restore_dbops::create_new_course('', '', $categoryid);
+                                $controller = new restore_controller($folder, $course_id, backup::INTERACTIVE_NO, backup::MODE_GENERAL, $userdoingrestore, backup::TARGET_NEW_COURSE);
+                                $controller->execute_precheck();
+                                $controller->execute_plan();
+
+                                $update = $DB->get_record('ls_version', array('course_id' => $courseid));
+                                $update->course_id = $course_id;
+                                $DB->update_record('ls_version', $update);
+
+                                $returnId[$courseid] = $course_id;
+                                
+                            } else {
+                                $match = false;
+                                break;
+                            }
+                            Delete($path . DIRECTORY_SEPARATOR . $folder, false);
+                        } else {
+                            $match = false;
+                            break;
+                        }
+                    }
+                }
+                Delete($parentPath, false);
+                if ($match) {
+                    $transaction->allow_commit();
+                    if ($hasil && $DB->insert_record('ls_synchronizelog', $syncLog, false)) {
+                        purge_all_caches();
+                        $results = array(
+                            'success' => true,
+                            'message' => 'Successfully create new synchronization',
+                            'result' => $returnId
+                        );
+                    }
+                } else {
+                    $results['message'] = $results['message'] . ' Package not recognized, please try to create another package.';
+                }
+            }
         }
     }
 }

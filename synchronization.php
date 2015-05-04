@@ -40,11 +40,12 @@ $table->setup();
 $sort = $table->get_sql_sort();
 $synchLog = $DB->get_records('ls_synchronizelog', array(), $sort, '*', ($spage * $perpage), $perpage);
 foreach ($synchLog as $key => $value) {
-    $school = $DB->get_record('local_school', array('id' => $value->school_id),'school_name');
+    $local = $DB->get_record('local_school', array('id' => $value->school_id));
+    $school = $DB->get_record('course_categories', array('id' => $local->category));
     $table->add_data(array(
         $value->time,
         $value->version,
-        $school->school_name,
+        $school->name,
     ));
 }
 $table->print_html();

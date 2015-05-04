@@ -26,27 +26,4 @@
 function xmldb_local_schoolreg_install() {
     global $DB;
 
-    $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
-
-    $table = new xmldb_table('synch_log_item');
-    $table->add_field('id', XMLDB_TYPE_INTEGER, 11, null, true, true);
-    $table->add_field('table_name', XMLDB_TYPE_CHAR, '50', null, true);
-    $table->add_field('qtype', XMLDB_TYPE_CHAR, '20', null, true);
-    $table->add_field('sqltext', XMLDB_TYPE_TEXT, null, null, true);
-    $table->add_field('sqlparams', XMLDB_TYPE_TEXT, null, null, true);
-    $table->add_field('timelogged', XMLDB_TYPE_INTEGER, 11, null, true);
-    $table->add_field('status', XMLDB_TYPE_INTEGER, 2, null, true, null, 0);
-    $table->add_key('synch_log_item_pk', XMLDB_KEY_PRIMARY, array('id'));
-    if ($dbman->table_exists($table)) {
-        $dbman->drop_table($table);
-    }
-    $dbman->create_table($table);
-
-    $table = new xmldb_table('course');
-    $field = new xmldb_field('sync_version', XMLDB_TYPE_INTEGER, 11, null, null, null, 0);
-    if ($dbman->field_exists($table, $field)) {
-        $dbman->drop_field($table, $field);
-    } else {
-        $dbman->add_field($table, $field);
-    }
 }

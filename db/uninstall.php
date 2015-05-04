@@ -27,19 +27,4 @@ function xmldb_local_schoolreg_uninstall() {
 
     global $DB;
 
-    $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
-
-    $dbman = $DB->get_manager();
-    $isExists = $dbman->table_exists('synch_log_item');
-    if ($isExists) {
-        $table = new xmldb_table('synch_log_item');
-        $dbman->drop_table($table);
-    }
-
-    $table = new xmldb_table('course');
-    $field = new xmldb_field('sync_version', XMLDB_TYPE_INTEGER, 11, null, null, null, 0);
-    if ($dbman->field_exists($table, $field)) {
-        $dbman->drop_field($table, $field);
-    }
-
 }

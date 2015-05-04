@@ -42,9 +42,14 @@ if ($mform->is_cancelled()) { // kalau di cancel
         $record->verified = 0;
 
         $jumlah = $DB->count_records('local_school', array('pic_email' => $fromform->full_name));
+        $jumlahCategory = $DB->count_records('local_school', array('category' => $fromform->category_id));
         if ($jumlah > 0) {
             echo $OUTPUT->notification(get_string('email_unique', 'local_schoolreg'), 'notifyproblem');
-            $mform->set_data($toform);
+            $mform->set_data($fromform);
+            $mform->display();
+        } else if ($jumlahCategory > 0) {
+            echo $OUTPUT->notification(get_string('school_unique', 'local_schoolreg'), 'notifyproblem');
+            $mform->set_data($fromform);
             $mform->display();
         } else {
             if ($DB->insert_record('local_school', $record, false)) {

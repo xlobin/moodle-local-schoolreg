@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Sync Web Service.
  *
@@ -10,7 +11,6 @@ class SyncWebService {
 
     public $schoolToken = '';
     public $schoolID = '';
-
     private $_responses;
 
     /**
@@ -23,16 +23,17 @@ class SyncWebService {
         $schoolID = $token[1];
 
 
-        $sch = $DB->get_record('local_school', array('school_id'=>$schoolID, 'school_key'=>$schoolToken));
-        if($sch){
+        $sch = $DB->get_record('local_school', array('school_id' => $schoolID, 'school_key' => $schoolToken));
+        if ($sch) {
             $this->_responses = array(
-                'id'            =>  $sch->id,
-                'school_name'   =>  $sch->school_name,
-                'school_id'     =>  $sch->school_id,
-                'school_key'    =>  $sch->school_key,
-                'path'          =>  '/schdir/'.$sch->school_id,
+                'id' => $sch->id,
+                'school_name' => $sch->school_name,
+                'category' => $sch->category,
+                'school_id' => $sch->school_id,
+                'school_key' => $sch->school_key,
+                'path' => '/schdir/' . $sch->school_id,
             );
-        }else{
+        } else {
             $this->_responses = false;
         }
 

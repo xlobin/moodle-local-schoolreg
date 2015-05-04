@@ -28,6 +28,10 @@ if ($hassiteconfig) {
                 'url' => new moodle_url('/local/schoolreg/verified.php'),
                 'text' => get_string('verified_school', 'local_schoolreg')
             ),
+            'coursepackage' => array(
+                'url' => new moodle_url('/local/schoolreg/package.php'),
+                'text' => get_string('course_package', 'local_schoolreg')
+            ),
             'localdatabasebackup' => array(
                 'url' => new moodle_url('/local/schoolreg/database_backup.php'),
                 'text' => get_string('database_backup', 'local_schoolreg')
